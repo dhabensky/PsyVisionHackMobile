@@ -1,10 +1,22 @@
 package com.idp.emocore.Data;
 
 import android.app.DownloadManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+import android.util.Base64;
+import android.util.JsonReader;
 
+
+import com.idp.emocore.App;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
@@ -25,6 +37,7 @@ public class PhotoData extends DataFrame{
 
     private byte[] data;
     FaceApiResult result;
+    File file;
 
     private boolean ready = false;
 
@@ -34,21 +47,47 @@ public class PhotoData extends DataFrame{
         timestamp = System.currentTimeMillis();
         this.data = data;
 
+        File outputDir = App.getContext().getCacheDir(); // context being the Activity pointer
+        try {
+            file = File.createTempFile("temp" + timestamp, ".jpg", outputDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         requestAnalysis();
     }
 
     private void requestAnalysis() {
         if (isReady()) return;
+
+        MediaType type
+                = MediaType.parse("application/octet-stream");
+
         final OkHttpClient client = new OkHttpClient();
-        RequestBody body = RequestBody.create(MediaType.parse("ByteString"), ByteString.of(ByteBuffer.wrap(data)));
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+
+
+        ByteBuffer baos = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight() * 4);
+        bitmap.copyPixelsToBuffer(baos);
+        byte[] b = baos.array();
+        //String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
+
+        RequestBody body = RequestBody.create(type, data);
         Request request = new Request.Builder()
-                .url("https://westcentralus.api.cognitive.microsoft.com/face/v1.0/detect?returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes={emotions}")
+                .url("https://westcentralus.api.cognitive.microsoft.com/face/v1.0/detect?returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=emotion")
                 .addHeader("Content-Type", "application/octet-stream")
                 .addHeader("Ocp-Apim-Subscription-Key", "8146de19d6ed4702aefaabac2b2165ec")
                 .post(body)
                 .build();
 
         System.out.println("request sended");
+        try {
+            System.out.println("body length: " + request.body().contentLength());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         client.newCall(request).enqueue(new Callback() {
@@ -56,7 +95,8 @@ public class PhotoData extends DataFrame{
 
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                System.out.println("failed fully");
             }
 
             @Override
@@ -64,7 +104,12 @@ public class PhotoData extends DataFrame{
                 if (!response.isSuccessful()) {
                     onFailure(call, new IOException());
                 }
-                System.out.println(response.toString());
+                //JsonReader reader = new JsonReader();
+                try {
+                    System.out.println(response.body().string());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 ready = true;
             }
         });
@@ -72,5 +117,19 @@ public class PhotoData extends DataFrame{
 
     public boolean isReady() {
         return ready;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+        char[] hexChars = new char[bytes.length * 2];
+        int v;
+        for ( int j = 0; j < bytes.length; j++ ) {
+            v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        System.out.println(new String(hexChars));
+        return new String(hexChars);
+
     }
 }

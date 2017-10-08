@@ -1,7 +1,11 @@
 package com.idp.emocore;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Handler;
+import android.util.Base64;
+import android.widget.ImageView;
 
 import com.idp.emocore.Data.PhotoData;
 
@@ -17,7 +21,7 @@ public class DataGrabber {
 
 
 
-    public static void setPhotoGrabber() {
+    public static void setPhotoGrabber(final ImageView iv) {
         final Handler handler = new Handler();
 // Define the code block to be executed
         Runnable runnableCode = new Runnable() {
@@ -28,6 +32,9 @@ public class DataGrabber {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
                         photos.add(new PhotoData(data));
+                        Bitmap bMap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        iv.setImageBitmap(bMap);
+
                     }
                 });
 
@@ -36,7 +43,7 @@ public class DataGrabber {
             }
         };
 // Start the initial runnable task by posting through the handler
-        handler.post(runnableCode);
+        handler.postDelayed(runnableCode, 3000);
     }
 
 }

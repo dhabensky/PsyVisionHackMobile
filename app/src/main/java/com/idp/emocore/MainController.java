@@ -21,6 +21,7 @@ public class MainController {
 	}
 
 	public void setCamera(Camera mCamera) {
+
 		this.mCamera = mCamera;
 	}
 

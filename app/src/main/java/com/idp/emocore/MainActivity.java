@@ -1,22 +1,27 @@
 package com.idp.emocore;
 
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
+import java.util.Random;
+
 
 public class MainActivity extends AppCompatActivity {
 
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private MainController mMainController;
-
-
+	private Rect mFaceRect;
+	private TextView mStatus;
+	private ViewOverlay mOverlay;
+	private int mStatusNumber = -1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -24,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		mMainController = MainController.getInstance();
 
-		TextView textView = (TextView) findViewById(R.id.textView);
-		textView.setOnClickListener(new View.OnClickListener() {
+		mStatus = (TextView) findViewById(R.id.textView);
+		mStatus.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				mMainController.takePicture(new Camera.PictureCallback() {
@@ -37,20 +42,48 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		DataGrabber.setPhotoGrabber();
+		mOverlay = (ViewOverlay) findViewById(R.id.overlay);
+
+
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		// Create an instance of Camera
+
 		mCamera = getCameraInstance();
+		mCamera.setFaceDetectionListener(new Camera.FaceDetectionListener() {
+			@Override
+			public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+				if (faces != null && faces.length > 0)
+					mFaceRect = faces[0].rect;
+				else
+					mFaceRect = null;
+				mOverlay.setFaceRect(mFaceRect);
+				if (mFaceRect != null) {
+					String[] statuses = getResources().getStringArray(R.array.face_status);
+					if (mStatusNumber == -1) {
+						mStatusNumber = new Random().nextInt(statuses.length);
+						mStatus.setText(statuses[mStatusNumber]);
+						mStatus.setVisibility(View.VISIBLE);
+					}
+				}
+				else {
+					mStatus.setVisibility(View.GONE);
+					mStatusNumber = -1;
+				}
+			}
+		});
+		mCamera.startFaceDetection();
 
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(this, mCamera);
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 		preview.addView(mPreview);
 		mMainController.setCamera(mCamera);
+
+		DataGrabber.setPhotoGrabber((ImageView) findViewById(R.id.imageview));
+
 	}
 
 	@Override
