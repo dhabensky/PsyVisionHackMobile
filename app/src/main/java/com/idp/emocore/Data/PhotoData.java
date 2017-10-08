@@ -1,23 +1,7 @@
 package com.idp.emocore.Data;
 
-import android.app.DownloadManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
-import android.util.Base64;
-import android.util.JsonReader;
 
-
-import com.idp.emocore.App;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -26,8 +10,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.ByteString;
-import retrofit2.Retrofit;
 
 /**
  * Created by ozvairon on 08.10.2017.
@@ -37,7 +19,6 @@ public class PhotoData extends DataFrame{
 
     private byte[] data;
     FaceApiResult result;
-    File file;
 
     private boolean ready = false;
 
@@ -46,14 +27,6 @@ public class PhotoData extends DataFrame{
     public PhotoData(byte[] data) {
         timestamp = System.currentTimeMillis();
         this.data = data;
-
-        File outputDir = App.getContext().getCacheDir(); // context being the Activity pointer
-        try {
-            file = File.createTempFile("temp" + timestamp, ".jpg", outputDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         requestAnalysis();
     }
 
@@ -64,15 +37,6 @@ public class PhotoData extends DataFrame{
                 = MediaType.parse("application/octet-stream");
 
         final OkHttpClient client = new OkHttpClient();
-
-        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-
-
-
-        ByteBuffer baos = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight() * 4);
-        bitmap.copyPixelsToBuffer(baos);
-        byte[] b = baos.array();
-        //String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
 
         RequestBody body = RequestBody.create(type, data);
         Request request = new Request.Builder()
