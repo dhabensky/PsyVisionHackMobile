@@ -16,6 +16,8 @@ public class MainActivity extends AppCompatActivity {
 	private CameraPreview mPreview;
 	private MainController mMainController;
 
+
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
 				});
 			}
 		});
+
+		DataGrabber.setPhotoGrabber();
 	}
 
 	@Override
