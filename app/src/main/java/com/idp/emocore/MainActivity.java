@@ -6,16 +6,24 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -30,6 +38,65 @@ public class MainActivity extends AppCompatActivity {
 	private TextView mStatus;
 	private ViewOverlay mOverlay;
 	private int mStatusNumber = -1;
+
+	@BindView(R.id.textMessage)
+	TextView textMessage;
+	private List<String> stringList;
+	private SpeechAPI speechAPI;
+	private VoiceRecorder mVoiceRecorder;
+//	private ArrayAdapter adapter;
+
+	private final VoiceRecorder.Callback mVoiceCallback = new VoiceRecorder.Callback() {
+
+		@Override
+		public void onVoiceStart() {
+			if (speechAPI != null) {
+				speechAPI.startRecognizing(mVoiceRecorder.getSampleRate());
+			}
+		}
+
+		@Override
+		public void onVoice(byte[] data, int size) {
+			if (speechAPI != null) {
+				speechAPI.recognize(data, size);
+			}
+		}
+
+		@Override
+		public void onVoiceEnd() {
+			if (speechAPI != null) {
+				speechAPI.finishRecognizing();
+			}
+		}
+
+	};
+
+	private static final int RECORD_REQUEST_CODE = 101;
+
+	private final SpeechAPI.Listener mSpeechServiceListener =
+			new SpeechAPI.Listener() {
+				@Override
+				public void onSpeechRecognized(final String text, final boolean isFinal) {
+					if (isFinal) {
+						mVoiceRecorder.dismiss();
+					}
+					if (textMessage != null && !TextUtils.isEmpty(text)) {
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								if (isFinal) {
+									textMessage.setText(null);
+									stringList.add(0,text);
+//									adapter.notifyDataSetChanged();
+								} else {
+									textMessage.setText(text);
+								}
+							}
+						});
+					}
+				}
+			};
+
 
 
 	@Override
@@ -72,6 +139,13 @@ public class MainActivity extends AppCompatActivity {
 		});
 
 		mOverlay = (ViewOverlay) findViewById(R.id.overlay);
+
+		ButterKnife.bind(this);
+		speechAPI = new SpeechAPI(MainActivity.this);
+		stringList = new ArrayList<>();
+//		adapter = new ArrayAdapter(this,
+//				android.R.layout.simple_list_item_1, stringList);
+//		listView.setAdapter(adapter); prikrutit' k view
 	}
 
 	@Override
@@ -81,10 +155,17 @@ public class MainActivity extends AppCompatActivity {
 			initView();
 		else
 			mViewInitRequested = true;
+
 	}
 
 	@Override
 	protected void onStop() {
+		stopVoiceRecorder();
+
+		// Stop Cloud Speech API
+		speechAPI.removeListener(mSpeechServiceListener);
+		speechAPI.destroy();
+		speechAPI = null;
 		if (mPermissionsGranted)
 			releaseView();
 		super.onStop();
@@ -163,6 +244,8 @@ public class MainActivity extends AppCompatActivity {
 		preview.addView(mPreview);
 		mMainController.setCamera(mCamera);
 		DataGrabber.setPhotoGrabber();
+		startVoiceRecorder();
+		speechAPI.addListener(mSpeechServiceListener);
 	}
 
 	private void releaseView() {
@@ -173,5 +256,29 @@ public class MainActivity extends AppCompatActivity {
 		preview.removeView(mPreview);
 		mMainController.setCamera(null);
 	}
+
+	private int isGrantedPermission(String permission) {
+		return ContextCompat.checkSelfPermission(this, permission);
+	}
+
+	private void makeRequest(String permission) {
+		ActivityCompat.requestPermissions(this, new String[]{permission}, RECORD_REQUEST_CODE);
+	}
+
+	private void startVoiceRecorder() {
+		if (mVoiceRecorder != null) {
+			mVoiceRecorder.stop();
+		}
+		mVoiceRecorder = new VoiceRecorder(mVoiceCallback);
+		mVoiceRecorder.start();
+	}
+
+	private void stopVoiceRecorder() {
+		if (mVoiceRecorder != null) {
+			mVoiceRecorder.stop();
+			mVoiceRecorder = null;
+		}
+	}
+
 
 }
