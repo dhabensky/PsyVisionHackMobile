@@ -21,9 +21,8 @@ public class DataGrabber {
 
 
 
-    public static void setPhotoGrabber(final ImageView iv) {
+    public static void setPhotoGrabber() {
         final Handler handler = new Handler();
-// Define the code block to be executed
         Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
@@ -33,8 +32,7 @@ public class DataGrabber {
                     public void onPictureTaken(byte[] data, Camera camera) {
                         photos.add(new PhotoData(data));
                         Bitmap bMap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                        iv.setImageBitmap(bMap);
-
+//                        iv.setImageBitmap(bMap);
                     }
                 });
 
@@ -42,7 +40,6 @@ public class DataGrabber {
                 handler.postDelayed(this, 3000);
             }
         };
-// Start the initial runnable task by posting through the handler
         handler.postDelayed(runnableCode, 3000);
     }
 

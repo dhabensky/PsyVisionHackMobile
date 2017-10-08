@@ -30,10 +30,6 @@ public class ViewOverlay extends View {
 		super(context, attrs, defStyleAttr);
 	}
 
-	public ViewOverlay(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
-	}
-
 	private Rect mRect;
 	private Paint mPaint;
 
