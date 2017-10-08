@@ -8,7 +8,7 @@ public class Emotion {
 
     public double anger;
     public double happiness;
-    public double surprise;
+    public double sadness;
     public double fear;
     public double neutral;
 }
