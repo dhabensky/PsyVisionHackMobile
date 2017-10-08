@@ -107,7 +107,6 @@ public class SpeechAPI {
         this.mContext = mContext;
         mHandler = new Handler();
         fetchAccessToken();
-
     }
 
     public void destroy() {
