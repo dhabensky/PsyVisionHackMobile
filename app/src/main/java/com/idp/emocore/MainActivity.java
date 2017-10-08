@@ -1,6 +1,8 @@
 package com.idp.emocore;
 
+import android.graphics.Rect;
 import android.hardware.Camera;
+import android.hardware.camera2.params.Face;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,13 +10,15 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private MainController mMainController;
+	private Rect mFaceRect;
+	private TextView mStatus;
+	private ViewOverlay mOverlay;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -22,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		mMainController = MainController.getInstance();
 
-		TextView textView = (TextView) findViewById(R.id.textView);
-		textView.setOnClickListener(new View.OnClickListener() {
+		mStatus = (TextView) findViewById(R.id.textView);
+		mStatus.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				mMainController.takePicture(new Camera.PictureCallback() {
@@ -34,13 +38,29 @@ public class MainActivity extends AppCompatActivity {
 				});
 			}
 		});
+
+		mOverlay = (ViewOverlay) findViewById(R.id.overlay);
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		// Create an instance of Camera
+
 		mCamera = getCameraInstance();
+		mCamera.setFaceDetectionListener(new Camera.FaceDetectionListener() {
+			@Override
+			public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+				if (faces != null && faces.length > 0) {
+					mFaceRect = faces[0].rect;
+				}
+				else {
+					mFaceRect = null;
+				}
+				mOverlay.setFaceRect(mFaceRect);
+				mStatus.setVisibility(mFaceRect == null ? View.GONE : View.VISIBLE);
+			}
+		});
+		mCamera.startFaceDetection();
 
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(this, mCamera);
