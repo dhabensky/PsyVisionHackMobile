@@ -56,4 +56,8 @@ public class DataGrabber {
         new VoiceRecorder(audioChunks);
     }
 
+    public static void pushAudio(byte[] data) {
+        audioChunks.add(new AudioData());
+    }
+
 }

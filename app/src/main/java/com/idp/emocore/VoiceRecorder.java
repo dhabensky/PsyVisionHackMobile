@@ -88,7 +88,7 @@ public class VoiceRecorder {
                 chunk = concat(chunk, bData);
         }
         Log.d("AUDIO", "end: " + System.currentTimeMillis());
-        new AudioData(chunk);
+        DataGrabber.pushAudio(chunk);
         startRecordingThread();
 
 
