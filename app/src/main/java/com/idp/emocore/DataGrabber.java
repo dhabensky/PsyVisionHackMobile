@@ -1,11 +1,7 @@
 package com.idp.emocore;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Handler;
-import android.util.Base64;
-import android.widget.ImageView;
 
 import com.idp.emocore.Data.PhotoData;
 
@@ -17,30 +13,32 @@ import java.util.LinkedList;
 
 public class DataGrabber {
 
+    private static final int DELAY = 3000;
+    private static Handler sHandler;
+
+    private static Runnable sRunnable =  new Runnable() {
+        @Override
+        public void run() {
+            MainController.getInstance().takePicture(new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    photos.add(new PhotoData(data));
+                }
+            });
+            sHandler.postDelayed(this, 3000);
+        }
+    };
     static LinkedList<PhotoData> photos = new LinkedList<PhotoData>();
 
 
-
     public static void setPhotoGrabber() {
-        final Handler handler = new Handler();
-        Runnable runnableCode = new Runnable() {
-            @Override
-            public void run() {
+        sHandler = new Handler();
+        sHandler.postDelayed(sRunnable, DELAY);
+    }
 
-                MainController.getInstance().takePicture(new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        photos.add(new PhotoData(data));
-                        Bitmap bMap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//                        iv.setImageBitmap(bMap);
-                    }
-                });
-
-
-                handler.postDelayed(this, 3000);
-            }
-        };
-        handler.postDelayed(runnableCode, 3000);
+    public static void stopPhotoGrabber() {
+        sHandler.removeCallbacks(sRunnable);
+        sHandler = null;
     }
 
 }

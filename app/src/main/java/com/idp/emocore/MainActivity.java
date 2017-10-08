@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
 	private boolean mViewInitRequested;
 	private TextView mStatus;
 	private ViewOverlay mOverlay;
-	private Rect mFaceRect;
 	private int mStatusNumber = -1;
 
 
@@ -37,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		View decorView = getWindow().getDecorView();
+		int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(uiOptions);
 
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
 				ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
@@ -133,12 +136,13 @@ public class MainActivity extends AppCompatActivity {
 		mCamera.setFaceDetectionListener(new Camera.FaceDetectionListener() {
 			@Override
 			public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+				Rect faceRect;
 				if (faces != null && faces.length > 0)
-					mFaceRect = faces[0].rect;
+					faceRect = faces[0].rect;
 				else
-					mFaceRect = null;
-				mOverlay.setFaceRect(mFaceRect);
-				if (mFaceRect != null) {
+					faceRect = null;
+				mOverlay.setFaceRect(faceRect);
+				if (faceRect != null) {
 					String[] statuses = getResources().getStringArray(R.array.face_status);
 					if (mStatusNumber == -1) {
 						mStatusNumber = new Random().nextInt(statuses.length);
@@ -162,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void releaseView() {
+		DataGrabber.stopPhotoGrabber();
 		mCamera.release();
 		mCamera = null;
 		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);

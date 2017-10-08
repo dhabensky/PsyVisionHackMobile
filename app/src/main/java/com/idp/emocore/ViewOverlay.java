@@ -32,6 +32,8 @@ public class ViewOverlay extends View {
 
 	private Rect mRect;
 	private Paint mPaint;
+	private EmotionsView mEmotionView;
+
 
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -45,6 +47,21 @@ public class ViewOverlay extends View {
 				mPaint.setStyle(Paint.Style.STROKE);
 			}
 			canvas.drawRect(mRect, mPaint);
+
+			if (mEmotionView == null) {
+				mEmotionView = new EmotionsView(getContext());
+				mEmotionView.setAudioEmotion("Гнев", 666);
+				mEmotionView.setImageEmotion("Получение по ебалу неизбежно", 666);
+			}
+
+			int widthSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.AT_MOST);
+			int heightSpec = MeasureSpec.makeMeasureSpec(getHeight(), MeasureSpec.AT_MOST);
+			mEmotionView.measure(widthSpec, heightSpec);
+			mEmotionView.layout(0, 0, mEmotionView.getMeasuredWidth(), mEmotionView.getMeasuredHeight());
+
+			canvas.translate(mRect.right, mRect.top);
+
+			mEmotionView.draw(canvas);
 		}
 	}
 
@@ -64,6 +81,14 @@ public class ViewOverlay extends View {
 			int left = mRect.left;
 			mRect.left = getWidth() - mRect.right;
 			mRect.right = getWidth() - left;
+
+			int w = mRect.centerX() - mRect.left;
+			int h = mRect.centerY() - mRect.top;
+			float c = 1.5f;
+			mRect.left = mRect.centerX() - (int)(w * c);
+			mRect.right = mRect.centerX() + (int)(w * c);
+			mRect.top = mRect.centerY() - (int)(h * c);
+			mRect.bottom = mRect.centerY() + (int)(h * c);
 		}
 		invalidate();
 	}
