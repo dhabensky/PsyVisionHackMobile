@@ -88,7 +88,7 @@ public class Analysis {
         PhotoData p = getNewestPhoto();
         AudioData a = getNewestAudio();
 
-        if (p != null) Log.d("PHOTO RESULT", p.result.happines + "");
+        if (p != null) Log.d("PHOTO RESULT", p.result.happiness + "");
         if (a != null) Log.d("AUDIO RESULT", a.getData().Happiness + "");
 
         previous = System.currentTimeMillis();

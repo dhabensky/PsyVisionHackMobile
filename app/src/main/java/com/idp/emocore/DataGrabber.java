@@ -1,13 +1,9 @@
 package com.idp.emocore;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Handler;
-import android.util.Base64;
 import android.util.Log;
-import android.widget.ImageView;
 
 import com.idp.emocore.Data.AudioData;
 import com.idp.emocore.Data.PhotoData;
@@ -38,27 +34,7 @@ public class DataGrabber {
         }
     };
     static LinkedList<PhotoData> photos = new LinkedList<PhotoData>();
-    static Queue<PhotoData> photos = new LinkedList<PhotoData>();
     static Queue<AudioData> audioChunks = new LinkedList<AudioData>();
-
-
-    public static void setPhotoGrabber() {
-        final Handler handler = new Handler();
-        Runnable runnableCode = new Runnable() {
-            @Override
-            public void run() {
-
-                MainController.getInstance().takePicture(new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        photos.add(new PhotoData(data));
-                    }
-                });
-                handler.postDelayed(this, 3500);
-            }
-        };
-        handler.postDelayed(runnableCode, 2000);
-    }
 
 
     public static void setPhotoGrabber() {
@@ -67,8 +43,10 @@ public class DataGrabber {
     }
 
     public static void stopPhotoGrabber() {
-        sHandler.removeCallbacks(sRunnable);
-        sHandler = null;
+	    sHandler.removeCallbacks(sRunnable);
+	    sHandler = null;
+    }
+
     public static void setAudioGrabber(Context cont) {
         new AudioController(cont).execute();
     }

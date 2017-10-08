@@ -1,13 +1,8 @@
 package com.idp.emocore;
 
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
 import android.os.Handler;
 
-import com.idp.emocore.Data.PhotoData;
 import com.projects.alshell.vokaturi.Vokaturi;
 import com.projects.alshell.vokaturi.VokaturiException;
 
@@ -17,15 +12,15 @@ import com.projects.alshell.vokaturi.VokaturiException;
 
 public class AudioController {
 
-    Context cont;
+    Context analCunt;
 
     public AudioController(Context cont) {
-        this.cont = cont;
+        this.analCunt = cont;
     }
 
     public void execute(){
         try {
-            Vokaturi.getInstance(cont).startListeningForSpeech();
+            Vokaturi.getInstance(analCunt).startListeningForSpeech();
         } catch (VokaturiException e) {
             e.printStackTrace();
         }
@@ -36,11 +31,11 @@ public class AudioController {
             @Override
             public void run() {
                 try {
-                    DataGrabber.pushAudio(Vokaturi.getInstance(cont).stopListeningAndAnalyze());
+                    DataGrabber.pushAudio(Vokaturi.getInstance(analCunt).stopListeningAndAnalyze());
                 } catch (VokaturiException e) {
                     e.printStackTrace();
                 }
-                new AudioController(cont).execute();
+                new AudioController(analCunt).execute();
             }
         };
         handler.postDelayed(runnableCode, 8000);
