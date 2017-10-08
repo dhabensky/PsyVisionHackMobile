@@ -1,5 +1,6 @@
 package com.idp.emocore;
 
+import android.hardware.Camera;
 import android.os.Handler;
 
 import com.idp.emocore.Data.PhotoData;
@@ -22,9 +23,16 @@ public class DataGrabber {
         Runnable runnableCode = new Runnable() {
             @Override
             public void run() {
-                photos.add(new PhotoData());
-                System.out.println("new photo");
-                handler.postDelayed(this, 2000);
+
+                MainController.getInstance().takePicture(new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        photos.add(new PhotoData(data));
+                    }
+                });
+
+
+                handler.postDelayed(this, 3000);
             }
         };
 // Start the initial runnable task by posting through the handler

@@ -30,8 +30,11 @@ public class PhotoData extends DataFrame{
 
     //private json
 
-    public PhotoData() {
+    public PhotoData(byte[] data) {
+        timestamp = System.currentTimeMillis();
+        this.data = data;
 
+        requestAnalysis();
     }
 
     private void requestAnalysis() {
@@ -44,6 +47,8 @@ public class PhotoData extends DataFrame{
                 .addHeader("Ocp-Apim-Subscription-Key", "8146de19d6ed4702aefaabac2b2165ec")
                 .post(body)
                 .build();
+
+        System.out.println("request sended");
 
 
         client.newCall(request).enqueue(new Callback() {

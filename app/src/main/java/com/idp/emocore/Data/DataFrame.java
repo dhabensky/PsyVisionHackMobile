@@ -5,6 +5,6 @@ package com.idp.emocore.Data;
  */
 
 public class DataFrame {
-    long timestamp;
+    protected long timestamp;
 
 }
