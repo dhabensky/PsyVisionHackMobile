@@ -8,14 +8,13 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
  * Created by dhabensky on 08.10.2017.
  */
 
-public class ViewOverlay extends View{
+public class ViewOverlay extends View {
 
 
 
@@ -57,7 +56,6 @@ public class ViewOverlay extends View{
 		mRect = rect;
 		if (mRect != null) {
 			Matrix matrix = new Matrix();
-			matrix.postRotate(90);
 			matrix.postScale(getWidth() / 2000f, getHeight() / 2000f);
 			matrix.postTranslate(getWidth() / 2f, getHeight() / 2f);
 
@@ -67,9 +65,9 @@ public class ViewOverlay extends View{
 			mRect.top  = Math.round(mapped[1]);
 			mRect.right  = Math.round(mapped[2]);
 			mRect.bottom = Math.round(mapped[3]);
-			int top = mRect.top;
-			mRect.top = getHeight() - mRect.bottom;
-			mRect.bottom = getHeight() - top;
+			int left = mRect.left;
+			mRect.left = getWidth() - mRect.right;
+			mRect.right = getWidth() - left;
 		}
 		invalidate();
 	}

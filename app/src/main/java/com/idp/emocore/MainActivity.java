@@ -1,31 +1,63 @@
 package com.idp.emocore;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.List;
+import java.util.Random;
+
 
 public class MainActivity extends AppCompatActivity {
+
+	private static final int PERMISSION_REQUEST_CODE = 666;
 
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private MainController mMainController;
-
+	private boolean mPermissionsGranted;
+	private boolean mViewInitRequested;
+	private TextView mStatus;
+	private ViewOverlay mOverlay;
+	private Rect mFaceRect;
+	private int mStatusNumber = -1;
 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+				ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+				ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				requestPermissions(new String[] {
+						Manifest.permission.CAMERA,
+						Manifest.permission.RECORD_AUDIO,
+						Manifest.permission.INTERNET
+				}, PERMISSION_REQUEST_CODE);
+			}
+		}
+		else {
+			mPermissionsGranted = true;
+		}
+
 		mMainController = MainController.getInstance();
 
-		TextView textView = (TextView) findViewById(R.id.textView);
-		textView.setOnClickListener(new View.OnClickListener() {
+		mStatus = (TextView) findViewById(R.id.textView);
+		mStatus.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				mMainController.takePicture(new Camera.PictureCallback() {
@@ -37,29 +69,22 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		DataGrabber.setPhotoGrabber();
+		mOverlay = (ViewOverlay) findViewById(R.id.overlay);
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		// Create an instance of Camera
-		mCamera = getCameraInstance();
-
-		// Create our Preview view and set it as the content of our activity.
-		mPreview = new CameraPreview(this, mCamera);
-		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-		preview.addView(mPreview);
-		mMainController.setCamera(mCamera);
+		if (mPermissionsGranted)
+			initView();
+		else
+			mViewInitRequested = true;
 	}
 
 	@Override
 	protected void onStop() {
-		mCamera.release();
-		mCamera = null;
-		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-		preview.removeView(mPreview);
-		mMainController.setCamera(null);
+		if (mPermissionsGranted)
+			releaseView();
 		super.onStop();
 	}
 
@@ -68,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 		Camera c = null;
 		try {
 			c = Camera.open(1); // attempt to get a Camera instance
-			c.setDisplayOrientation(90);
+			c.setDisplayOrientation(0);
 			Camera.Parameters params = c.getParameters();
 			params.setPictureSize(1280, 720);
 			c.setParameters(params);
@@ -78,4 +103,71 @@ public class MainActivity extends AppCompatActivity {
 		}
 		return c; // returns null if camera is unavailable
 	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+	                                       @NonNull int[] grantResults) {
+		if (requestCode == PERMISSION_REQUEST_CODE) {
+			for (int i = 0; i < grantResults.length; i++) {
+				if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+					Toast.makeText(this, "PERMISSION NOT GRANTED. RESTART THE APPLICATION", Toast.LENGTH_SHORT).show();
+					return;
+				}
+				onPermissionGranted();
+			}
+		}
+		else {
+			super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
+	}
+
+	private void onPermissionGranted() {
+		mPermissionsGranted = true;
+		if (mViewInitRequested) {
+			initView();
+			mViewInitRequested = false;
+		}
+	}
+
+	private void initView() {
+		mCamera = getCameraInstance();
+		mCamera.setFaceDetectionListener(new Camera.FaceDetectionListener() {
+			@Override
+			public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+				if (faces != null && faces.length > 0)
+					mFaceRect = faces[0].rect;
+				else
+					mFaceRect = null;
+				mOverlay.setFaceRect(mFaceRect);
+				if (mFaceRect != null) {
+					String[] statuses = getResources().getStringArray(R.array.face_status);
+					if (mStatusNumber == -1) {
+						mStatusNumber = new Random().nextInt(statuses.length);
+						mStatus.setText(statuses[mStatusNumber]);
+						mStatus.setVisibility(View.VISIBLE);
+					}
+				}
+				else {
+					mStatus.setVisibility(View.GONE);
+					mStatusNumber = -1;
+				}
+			}
+		});
+		mCamera.startFaceDetection();
+
+		mPreview = new CameraPreview(this, mCamera);
+		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+		preview.addView(mPreview);
+		mMainController.setCamera(mCamera);
+		DataGrabber.setPhotoGrabber();
+	}
+
+	private void releaseView() {
+		mCamera.release();
+		mCamera = null;
+		FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+		preview.removeView(mPreview);
+		mMainController.setCamera(null);
+	}
+
 }

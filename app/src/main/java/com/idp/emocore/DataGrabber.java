@@ -36,7 +36,7 @@ public class DataGrabber {
             }
         };
 // Start the initial runnable task by posting through the handler
-        handler.post(runnableCode);
+        handler.postDelayed(runnableCode, 3000);
     }
 
 }
