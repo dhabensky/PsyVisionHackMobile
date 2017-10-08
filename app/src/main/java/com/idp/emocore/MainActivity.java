@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import java.util.Random;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 	private Rect mFaceRect;
 	private TextView mStatus;
 	private ViewOverlay mOverlay;
+	private int mStatusNumber = -1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -50,14 +53,23 @@ public class MainActivity extends AppCompatActivity {
 		mCamera.setFaceDetectionListener(new Camera.FaceDetectionListener() {
 			@Override
 			public void onFaceDetection(Camera.Face[] faces, Camera camera) {
-				if (faces != null && faces.length > 0) {
+				if (faces != null && faces.length > 0)
 					mFaceRect = faces[0].rect;
+				else
+					mFaceRect = null;
+				mOverlay.setFaceRect(mFaceRect);
+				if (mFaceRect != null) {
+					String[] statuses = getResources().getStringArray(R.array.face_status);
+					if (mStatusNumber == -1) {
+						mStatusNumber = new Random().nextInt(statuses.length);
+						mStatus.setText(statuses[mStatusNumber]);
+						mStatus.setVisibility(View.VISIBLE);
+					}
 				}
 				else {
-					mFaceRect = null;
+					mStatus.setVisibility(View.GONE);
+					mStatusNumber = -1;
 				}
-				mOverlay.setFaceRect(mFaceRect);
-				mStatus.setVisibility(mFaceRect == null ? View.GONE : View.VISIBLE);
 			}
 		});
 		mCamera.startFaceDetection();

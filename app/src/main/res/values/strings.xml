@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">EmoCore</string>
+
+    <array name="face_status">
+        <item>Охуенный фейс</item>
+        <item>Знатное ебало</item>
+        <item>Эпический еблет</item>
+        <item>Просто илита</item>
+        <item>Lookin\' like a sir</item>
+    </array>
 </resources>
