@@ -113,7 +113,6 @@ public class Analysis {
                 res.sadness = p.result.sadness;
                 res.happiness = p.result.happiness;
                 res.neutral =  p.result.neutral;
-
             }
         } else {
             if (a != null) {
