@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
 		preview.addView(mPreview);
 		mMainController.setCamera(mCamera);
 
-		DataGrabber.setPhotoGrabber((ImageView) findViewById(R.id.imageview));
+		//DataGrabber.setPhotoGrabber((ImageView) findViewById(R.id.imageview));
+		DataGrabber.setAudioGrabber();
 
 	}
 

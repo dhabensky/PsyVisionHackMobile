@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.util.Base64;
 import android.widget.ImageView;
 
+import com.idp.emocore.Data.AudioData;
 import com.idp.emocore.Data.PhotoData;
 
 import java.util.LinkedList;
@@ -18,6 +19,10 @@ import java.util.LinkedList;
 public class DataGrabber {
 
     static LinkedList<PhotoData> photos = new LinkedList<PhotoData>();
+    static LinkedList<AudioData> audioChunks = new LinkedList<AudioData>();
+
+
+
 
 
 
@@ -44,6 +49,11 @@ public class DataGrabber {
         };
 // Start the initial runnable task by posting through the handler
         handler.postDelayed(runnableCode, 3000);
+    }
+
+
+    public static void setAudioGrabber() {
+        new VoiceRecorder(audioChunks);
     }
 
 }
