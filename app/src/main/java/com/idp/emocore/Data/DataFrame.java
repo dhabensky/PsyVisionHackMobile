@@ -7,4 +7,7 @@ package com.idp.emocore.Data;
 public class DataFrame {
     protected long timestamp;
 
+    public long getTimestamp() {
+        return timestamp;
+    }
 }

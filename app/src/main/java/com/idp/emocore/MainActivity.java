@@ -2,9 +2,12 @@ package com.idp.emocore;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +17,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.idp.emocore.Data.PhotoData;
 
 import java.util.Random;
 
@@ -40,12 +45,16 @@ public class MainActivity extends AppCompatActivity {
 
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
 				ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
-				ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+				ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED ||
+				ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+		ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ){
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 				requestPermissions(new String[] {
 						Manifest.permission.CAMERA,
 						Manifest.permission.RECORD_AUDIO,
-						Manifest.permission.INTERNET
+						Manifest.permission.INTERNET,
+						Manifest.permission.READ_EXTERNAL_STORAGE,
+						Manifest.permission.WRITE_EXTERNAL_STORAGE
 				}, PERMISSION_REQUEST_CODE);
 			}
 		}
@@ -160,7 +169,20 @@ public class MainActivity extends AppCompatActivity {
 		mMainController.setCamera(mCamera);
 
 		DataGrabber.setPhotoGrabber();
-		DataGrabber.setAudioGrabber();
+		DataGrabber.setAudioGrabber(this);
+
+		final Handler handler = new Handler();
+
+		final Analysis an = new Analysis(this);
+		Runnable runnableCode = new Runnable() {
+			@Override
+			public void run() {
+				an.check();
+				handler.postDelayed(this, 2000);
+			}
+		};
+		handler.postDelayed(runnableCode, 5000);
+
 
 	}
 

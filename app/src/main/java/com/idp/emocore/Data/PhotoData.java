@@ -1,6 +1,10 @@
 package com.idp.emocore.Data;
 
 
+import android.util.Log;
+
+import com.google.gson.Gson;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -18,7 +22,7 @@ import okhttp3.Response;
 public class PhotoData extends DataFrame{
 
     private byte[] data;
-    FaceApiResult result;
+    public Emotion result;
 
     private boolean ready = false;
 
@@ -47,11 +51,6 @@ public class PhotoData extends DataFrame{
                 .build();
 
         System.out.println("request sended");
-        try {
-            System.out.println("body length: " + request.body().contentLength());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
 
         client.newCall(request).enqueue(new Callback() {
@@ -68,13 +67,20 @@ public class PhotoData extends DataFrame{
                 if (!response.isSuccessful()) {
                     onFailure(call, new IOException());
                 }
-                //JsonReader reader = new JsonReader();
+                Gson gson = new Gson();
+
                 try {
-                    System.out.println(response.body().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
+
+                    String s = response.body().string();
+                    Log.d("JSON RESULT", s);
+                    ListFaces faces = gson.fromJson("{\"list\":" + s + "}", ListFaces.class);
+                    result = faces.list.get(0).faceAttributes.emotion;
+
+                    ready = true;
+                } catch (Exception ex) {
+                    Log.d("JSON RESULT", "ERROR");
+                    ex.getStackTrace();
                 }
-                ready = true;
             }
         });
     }
@@ -83,17 +89,4 @@ public class PhotoData extends DataFrame{
         return ready;
     }
 
-    public static String bytesToHex(byte[] bytes) {
-        final char[] hexArray = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-        char[] hexChars = new char[bytes.length * 2];
-        int v;
-        for ( int j = 0; j < bytes.length; j++ ) {
-            v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        System.out.println(new String(hexChars));
-        return new String(hexChars);
-
-    }
 }

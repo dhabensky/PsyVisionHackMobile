@@ -4,8 +4,6 @@ package com.idp.emocore.Data;
  * Created by ozvairon on 08.10.2017.
  */
 
-public class FaceApiResult {
-    public FaceAttributes faceAttributes;
-
-
+public class FaceAttributes {
+    public Emotion emotion;
 }
