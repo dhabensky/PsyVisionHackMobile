@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/EmoCore.iml" filepath="$PROJECT_DIR$/EmoCore.iml" />
       <module fileurl="file://$PROJECT_DIR$/PsyVisionHackMobile.iml" filepath="$PROJECT_DIR$/PsyVisionHackMobile.iml" />
-      <module fileurl="file://$PROJECT_DIR$/PsyVisionHackMobile.iml" filepath="$PROJECT_DIR$/PsyVisionHackMobile.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
